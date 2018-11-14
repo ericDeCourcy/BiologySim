@@ -19,6 +19,11 @@ const int yesNoBlockHeight = 32;
 const int yesNoBlockX = 336;
 const int yesNoBlockY = 704;
 
+const int pauseX = 0;
+const int pauseY = 640;
+const int pauseHeight = 48;
+const int pauseWidth = 64;
+
 const int BMTLwidth = 112;
 const int BMTLheight = 16;
 

@@ -33,6 +33,11 @@ const int menuHeight = 100; //height of menu in pixels
 const int sideMenuWidth = 112;
 const int minPoints = 0;   //the minimum number of points needed to make an edit
 const int errorLength = 10;
+const int numMinerals = 10;
+const int mineralPopSize = 100;
+const int maxStomachSize = 5;
+const int mineralStoppingThresh = 20;
+
 
 //the action codes - DONT FORGET to change numActions at the end
 const int ACTION_null = -1; //if this is the first action then that individual must die

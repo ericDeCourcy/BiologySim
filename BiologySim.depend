@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1522825991 source:c:\users\eric\documents\cbcode\biologysim\main.cpp
+1540533342 source:c:\users\eric\documents\cbcode\biologysim\main.cpp
 	<SFML/Graphics.hpp>
 	<SFML/Graphics/Text.hpp>
 	<time.h>
@@ -23,6 +23,14 @@
 	"requiresData.h"
 	"determineDataClicked.h"
 	"clickingStuff.h"
+	"displayingConfirmChange.h"
+	"determinePlaceOneObject.h"
+	"selectingData.h"
+	"windowTypeHandler.h"
+	"collisionBounce.h"
+	"mineralMoves.h"
+	"stomachStuff.h"
+	"debugStuff.h"
 
 1408236341 c:\sfml-2.1\include\sfml\graphics.hpp
 	<SFML/Window.hpp>
@@ -366,14 +374,14 @@
 	<windows.h>
 	<sstream>
 
-1522725384 c:\users\eric\documents\cbcode\biologysim\variables.h
+1538075984 c:\users\eric\documents\cbcode\biologysim\variables.h
 	<SFML/Window/Mouse.hpp>
 	"dataTypes.h"
 
-1518024863 c:\users\eric\documents\cbcode\biologysim\datatypes.h
+1529549082 c:\users\eric\documents\cbcode\biologysim\datatypes.h
 	"constants.h"
 
-1521870700 c:\users\eric\documents\cbcode\biologysim\constants.h
+1528063567 c:\users\eric\documents\cbcode\biologysim\constants.h
 	"graphicsConstants.h"
 
 1515694752 c:\users\eric\documents\cbcode\biologysim\load.h
@@ -382,19 +390,19 @@
 	<sstream>
 	"noiseStuff.h"
 
-1516665925 c:\users\eric\documents\cbcode\biologysim\individualops.h
+1535171537 c:\users\eric\documents\cbcode\biologysim\individualops.h
 	"mapOps.h"
 
-1515702875 c:\users\eric\documents\cbcode\biologysim\mapops.h
+1540533977 c:\users\eric\documents\cbcode\biologysim\mapops.h
 	"load.h"
 
 1508538856 c:\users\eric\documents\cbcode\biologysim\playeractions.h
 
-1521872074 c:\users\eric\documents\cbcode\biologysim\graphicsconstants.h
+1526622389 c:\users\eric\documents\cbcode\biologysim\graphicsconstants.h
 
-1522725839 c:\users\eric\documents\cbcode\biologysim\pauseactions.h
+1526887045 c:\users\eric\documents\cbcode\biologysim\pauseactions.h
 
-1516747866 c:\users\eric\documents\cbcode\biologysim\editactions.h
+1526625195 c:\users\eric\documents\cbcode\biologysim\editactions.h
 
 1503621941 c:\users\eric\documents\cbcode\biologysim\spriteloader.h
 	"sprites.h"
@@ -403,12 +411,12 @@
 	<SFML/Graphics.hpp>
 	<SFML/Graphics/Text.hpp>
 
-1522779435 c:\users\eric\documents\cbcode\biologysim\spritefilenames.h
+1535751117 c:\users\eric\documents\cbcode\biologysim\spritefilenames.h
 	"spriteID.h"
 
-1522826381 c:\users\eric\documents\cbcode\biologysim\spriteid.h
+1535751042 c:\users\eric\documents\cbcode\biologysim\spriteid.h
 
-1514073848 c:\users\eric\documents\cbcode\biologysim\presets.h
+1535744230 c:\users\eric\documents\cbcode\biologysim\presets.h
 
 1508623466 c:\users\eric\documents\cbcode\biologysim\userinterfacefuncs.h
 	<string>
@@ -419,7 +427,7 @@
 
 1514590275 c:\users\eric\documents\cbcode\biologysim\findnextemptyspecies.h
 
-1514869417 c:\users\eric\documents\cbcode\biologysim\findnextindividualspace.h
+1538204977 c:\users\eric\documents\cbcode\biologysim\findnextindividualspace.h
 
 1514931421 c:\users\eric\documents\cbcode\biologysim\findnextfreecolor.h
 
@@ -434,5 +442,21 @@
 
 1521954816 c:\users\eric\documents\cbcode\biologysim\determinedataclicked.h
 
-1522825991 c:\users\eric\documents\cbcode\biologysim\clickingstuff.h
+1532052829 c:\users\eric\documents\cbcode\biologysim\clickingstuff.h
+
+1526622079 c:\users\eric\documents\cbcode\biologysim\displayingconfirmchange.h
+
+1535436571 c:\users\eric\documents\cbcode\biologysim\determineplaceoneobject.h
+
+1526625587 c:\users\eric\documents\cbcode\biologysim\selectingdata.h
+
+1532802638 c:\users\eric\documents\cbcode\biologysim\windowtypehandler.h
+
+1533257275 c:\users\eric\documents\cbcode\biologysim\debugstuff.h
+
+1532759909 c:\users\eric\documents\cbcode\biologysim\collisionbounce.h
+
+1532759791 c:\users\eric\documents\cbcode\biologysim\mineralmoves.h
+
+1529466374 c:\users\eric\documents\cbcode\biologysim\stomachstuff.h
 

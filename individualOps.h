@@ -27,17 +27,14 @@ bool queryEval(int query, individual subject, bool hasCollided, int individualNu
         }
     case QUERY_canDivide:
         {
-            cout << "subject.energy & subject.divisionMinimum " << subject.energy << ", " << subject.divisionMinimum << "\n";
-            if(subject.energy > subject.divisionMinimum)
+            if(subject.energy > eDiv[subject.species])
             {
-                cout << "energy > divisionMin\n";
                 queryMet = true;
             }
             break;
         }
     case QUERY_heardNoise:
         {
-            std::cout << "it herd a noise\n";
             if(checkForSoundSource(subject.xPosition, subject.yPosition, flowcharts[subject.species][subject.currentState].actionData) > 0)
             {
                 queryMet = true;
@@ -56,12 +53,12 @@ eatingInfo attemptToEat(int x, int y, int eaterEnergy)      //test all the nearb
 {
     eatingInfo answer;
 
-    //energy of everything nearby ("Directional Energies"). index 0 means North, 1 NE, and so on to 7 = NW. (-1) means no energy and no individual
+    //energy of everything nearby ("Directional Energies"). index 0 means North, 1 NE, and so on to 7 = NW. (-1) means no energy and no individual. This is important as 0 means no energy but there IS something there (this is a mineral)
     int DE[8];
 
     const int DE_emptySpace = -1;   //means that there is no energy and no individual in that space
 
-    for(int n = 0; n < 8; n++)  //for each space, DE[n] = DE_emptySpace;
+    for(int n = 0; n < 8; n++)  //for each space, initialize DE[n] = DE_emptySpace;
     {
         DE[n] = DE_emptySpace;
     }
@@ -69,41 +66,97 @@ eatingInfo attemptToEat(int x, int y, int eaterEnergy)      //test all the nearb
     //gets the energies of each space around the eater, if there is something with energy there
     if(y > 0 && gameMap[x][y-1] != MC_emptySpace)
     {
-        DE[0] = population[gameMap[x][y-1]].energy;
+        if(gameMap[x][y-1] >= 1000)
+        {
+            DE[0] = 0;
+        }
+        else
+        {
+            DE[0] = population[gameMap[x][y-1]].energy;
+        }
     }
     if(y > 0 && x < mapWidth-1 && gameMap[x+1][y-1] != MC_emptySpace)
     {
-        DE[1] = population[gameMap[x+1][y-1]].energy;
+        if(gameMap[x+1][y-1] >= 1000)
+        {
+            DE[1] = 0;
+        }
+        else
+        {
+            DE[1] = population[gameMap[x+1][y-1]].energy;
+        }
     }
     if(x < mapWidth-1 && gameMap[x+1][y] != MC_emptySpace)
     {
-        DE[2] = population[gameMap[x+1][y]].energy;
+        if(gameMap[x+1][y] >= 1000)
+        {
+            DE[2] = 0;
+        }
+        else
+        {
+            DE[2] = population[gameMap[x+1][y]].energy;
+        }
     }
     if(x < mapWidth-1 && y < mapHeight-1 && gameMap[x+1][y+1] != MC_emptySpace)
     {
-        DE[3] = population[gameMap[x+1][y+1]].energy;
+        if(gameMap[x+1][y+1] >= 1000)
+        {
+            DE[3] = 0;
+        }
+        else
+        {
+            DE[3] = population[gameMap[x+1][y+1]].energy;
+        }
     }
     if(y < mapHeight-1 && gameMap[x][y+1] != MC_emptySpace)
     {
-        DE[4] = population[gameMap[x][y+1]].energy;
+        if(gameMap[x][y+1] >= 1000)
+        {
+            DE[4] = 0;
+        }
+        else
+        {
+            DE[4] = population[gameMap[x][y+1]].energy;
+        }
     }
     if(y < mapHeight-1 && x > 0 && gameMap[x-1][y+1] != MC_emptySpace)
     {
-        DE[5] = population[gameMap[x-1][y+1]].energy;
+        if(gameMap[x-1][y+1] >= 1000)
+        {
+            DE[5] = 0;
+        }
+        else
+        {
+            DE[5] = population[gameMap[x-1][y+1]].energy;
+        }
     }
     if(x > 0 && gameMap[x-1][y] != MC_emptySpace)
     {
-        DE[6] = population[gameMap[x-1][y]].energy;
+        if(gameMap[x-1][y] >= 1000)
+        {
+            DE[6] = 0;
+        }
+        else
+        {
+            DE[6] = population[gameMap[x-1][y]].energy;
+        }
     }
     if(x > 0 && y > 0 && gameMap[x-1][y-1] != MC_emptySpace)
     {
-        DE[7] = population[gameMap[x-1][y-1]].energy;
+        if(gameMap[x-1][y-1] >= 1000)
+        {
+            DE[7] = 0;
+        }
+        else
+        {
+            DE[7] = population[gameMap[x-1][y-1]].energy;
+        }
     }
 
     int bestPossibleIndex = -1;  //index of best possible eating choice. Best choice is highest in energy without being greater than the energy of the individual doing the eating.
     for(int n = 0; n < 8; n++)  //for all DE[n]...
     {
-        if(DE[n] != DE_emptySpace && bestPossibleIndex == DE_emptySpace && DE[n] < eaterEnergy)   //if bestPossibleIndex has not been defined yet (still equals DE_emptySpace) and DE[n] doesn't correspond to an empty space AND DE[n] is less than the energy that the eating guy has
+        if((DE[n] != DE_emptySpace) && (bestPossibleIndex == -1) && (DE[n] < eaterEnergy))   //if bestPossibleIndex has not been defined yet (still equals DE_emptySpace) and DE[n] doesn't correspond to an empty space AND DE[n] is less than the energy that the eating guy has
         {
             bestPossibleIndex = n;  //best index is now that index
         }
@@ -112,6 +165,8 @@ eatingInfo attemptToEat(int x, int y, int eaterEnergy)      //test all the nearb
             bestPossibleIndex = n;              //BPI now equals n
         }
     }
+
+    std::cout << "bestPossibleIndex = " << bestPossibleIndex << "\n";
 
     if(bestPossibleIndex == -1) //means that nothing in the above for loop changed BPI value, so all choices should be an empty space
     {
@@ -142,6 +197,8 @@ eatingInfo attemptToEat(int x, int y, int eaterEnergy)      //test all the nearb
         }
     }
 
+    std::cout << "answer.energyEaten = " << answer.energyEaten << "\t\tanswer.individualNumber = " << answer.individualNumber << "\n";
+
     return answer;      //returns the amount of energy eaten and the number of the individual that got eaten
 }
 
@@ -150,5 +207,13 @@ void clearEvalData()
     for(int i = 0; i < popSize; i++)
     {
         queryEvalData[i] = -1;
+    }
+}
+
+void validateIndividualSelected()
+{
+    if(population[individualSelected].alive == false)
+    {
+        individualSelected = -1;
     }
 }

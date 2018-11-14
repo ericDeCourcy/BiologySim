@@ -27,6 +27,8 @@ struct individual{  //NOTE: ALL OF THE VARIABLES DEFINED BELOW ARE DEFAULT VALUE
  //   int cellType = CELL_red;    //Cell type is just the sprite used       DEPRECATED
     int startingState = 0;  //Starting state is number 0 by default
     int species = -1;   //species number used for picking which flowchart it uses
+    int stomach[maxStomachSize];
+    int stomachSize = 0;
 };
 
 struct coordinates{
@@ -57,4 +59,11 @@ struct displayInfo{
 struct confirmChangeInfo{
     int original;
     int newChoice;
+};
+
+struct mineral{
+    int type;
+    int directionMoving;
+    int x;
+    int y;
 };

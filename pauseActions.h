@@ -99,6 +99,9 @@ int cellSelectYFind(int species)
     return returnVal;
 }
 
+
+//returns the species that you clicked whenever clicking on the cell holder
+//if you didnt click the cellHolder, -1 is returned
 int cellHolderSelector(int clickX, int clickY)
 {
     int relativeX = clickX - cellHolderX;
@@ -109,7 +112,7 @@ int cellHolderSelector(int clickX, int clickY)
 
     int species = holderColSelected + 10*holderRowSelected;
 
-    if((speciesPop[species] > 0) || (speciesIsWaiting[species]))
+     if((species < numSpecies) && ((speciesPop[species] > 0) || (speciesIsWaiting[species])))
     {
         return species;
     }
@@ -117,4 +120,23 @@ int cellHolderSelector(int clickX, int clickY)
     {
         return -1;
     }
+}
+
+void editButtonHandler()
+{
+    if(windowType == WT_paused)
+    {
+        windowType = WT_editing;
+    }
+    else
+    {
+        windowType = WT_paused;
+    }
+
+    displayingConfirmChange = false;
+    placeOneObjectClicked = -1;
+    editObjectClicked = -1;
+    edit_somethingClicked = false;
+    placeOneObject_hasBeenChosen = false;
+    isNewAction = false;
 }

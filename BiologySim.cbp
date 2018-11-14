@@ -50,9 +50,12 @@
 		</Linker>
 		<Unit filename="UserInterfaceFuncs.h" />
 		<Unit filename="clickingStuff.h" />
+		<Unit filename="collisionBounce.h" />
 		<Unit filename="constants.h" />
 		<Unit filename="dataTypes.h" />
+		<Unit filename="debugStuff.h" />
 		<Unit filename="determineDataClicked.h" />
+		<Unit filename="determinePlaceOneObject.h" />
 		<Unit filename="displayTextOnScreen.h" />
 		<Unit filename="editActions.h" />
 		<Unit filename="extinctionCheck.h" />
@@ -66,13 +69,16 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="makeNewSpecies.h" />
 		<Unit filename="mapOps.h" />
+		<Unit filename="mineralMoves.h" />
 		<Unit filename="noiseStuff.h" />
 		<Unit filename="pauseActions.h" />
 		<Unit filename="playerActions.h" />
 		<Unit filename="requiresData.h" />
+		<Unit filename="selectingData.h" />
 		<Unit filename="showIndividualInfo.h" />
 		<Unit filename="spriteFileNames.h" />
 		<Unit filename="spriteID.h" />
+		<Unit filename="stomachStuff.h" />
 		<Unit filename="variables.h" />
 		<Extensions>
 			<code_completion />

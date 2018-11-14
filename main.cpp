@@ -1,4 +1,5 @@
 //#include "loadTextures.h"
+//#include "loadTextures.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -38,6 +39,15 @@
 #include "requiresData.h"
 #include "determineDataClicked.h"
 #include "clickingStuff.h"
+#include "displayingConfirmChange.h"
+#include "determinePlaceOneObject.h"
+#include "selectingData.h"
+#include "windowTypeHandler.h"
+#include "collisionBounce.h"
+#include "mineralMoves.h"
+#include "stomachStuff.h"
+
+#include "debugStuff.h"
 
 using namespace std;
 
@@ -46,29 +56,42 @@ using namespace std;
 
 int main()
 {
+    initializeLog();
+
+    coutAndLog("test\n");
+    coutAndLog("should say this and test\n");
+
     //  1)  seeds random nums
     srand(time(NULL));
 
     //  2)  initializes points, chart coordinates, gameMap to empty
     pointInitializer();
+    eDivInitializer();
     chartDisplayInitializer();
     isWaitingInitializer();
     speciesLinkInitializer();
     mapInitializer();
     clearSounds();
     clearEvalData();
+    mineralPopInitializer();
+    lastSetInitializer();
 
     //defines flowcharts in general
     //for every flowchart spot used, make sure to declare action and default destination
 
     //  3)  Asks user for input, then loads if need be
-    std::cout << "Enter 0 to start new, enter any other number for load: " << "\n";
+    coutAndLog("destination 15 enum value: ");
+    cout<< dest_15_id;
+    coutAndLog("\n");
+    coutAndLog("Enter 0 to start new, enter any other number for load:\n");
     int userChoice = 0;
     std::cin >> userChoice;
 
     if(userChoice == 0)
     {
         setFlowchartsToStart();
+        spreadMinerals();
+        emptyAllStomachs();
     }
     else
     {
@@ -101,7 +124,7 @@ int main()
 
     }
 
-    //loads the greencellapp.draw(tempSprite); sprite
+    //loads the greencell sprite
 /*    sf::Texture greenCellTexture;
     if (!greenCellTexture.loadFromFile("greenCell.gif"))
     {   return EXIT_FAILURE;    }                //exits game if file cannot be found
@@ -118,7 +141,7 @@ int main()
     sf::Sprite pause(pauseTexture);
 
     sf::Texture optionsTexture;
-    if (!optionsTexture.loadFromFile("options.gif"))
+    if (!optionsTexture.loadFromFile("editor.gif")) //originally this was called "options" but has since been changed to "editor"
     {   return EXIT_FAILURE;    }
     sf::Sprite options(optionsTexture);
 
@@ -209,6 +232,20 @@ int main()
     cells[20].setTexture(allCellsTexture);
     cells[20].setTextureRect(sf::IntRect(0,32,16,16));
 
+//handles the mineral sprites
+    sf::Texture allMineralsTexture;
+    if(!allMineralsTexture.loadFromFile("minerals.gif"))
+    {   return EXIT_FAILURE;    }
+
+    sf::Sprite minerals[numMinerals];
+
+    for(int a = 0; a < numMinerals; a++)
+    {
+        minerals[a].setTexture(allMineralsTexture);
+        minerals[a].setTextureRect(sf::IntRect(a*16,0,16,16));
+    }
+
+//totally invisibles sprite used for functions that need to draw a sprite somewhere but you dont wanna actually have something show up on screen
     sf::Sprite nothing;
 
     sf::Texture destinationsTexture;
@@ -337,312 +374,14 @@ int main()
             std::cout << mousePos.y;
             std::cout << " are the coordinates\n";
 
-            //6dIII.V) if the window type is displayingConfirmChange
-            if(windowType == WT_displayingConfirmChange)
-            {
-                //6dIII.V-1) if you clicked the yes
-                if(mousePos.x >= yesNoBlockX && mousePos.x <= (yesNoBlockX + yesNoBlockHalfWidth) && mousePos.y >= yesNoBlockY && mousePos.y <= (yesNoBlockY + yesNoBlockHeight))
-                {
-                    //find the next species with zero pop && not waiting
-                    if(speciesIsWaiting[selectedSpecies])   //this applies if the species is waiting
-                    {
-                        makeNewSpecies(selectedSpecies, selectedSpecies, editObjectClicked, confirmData.newChoice, destinationSelected, choicesData, true, isNewAction);
-                        evolutionPoints[speciesLink[selectedSpecies]] = evolutionPoints[speciesLink[selectedSpecies]] - minPoints;
-                    }
-                    else    //this applies if the species is a new one
-                    {
-                        makeNewSpecies(selectedSpecies, findNextEmptySpecies(), editObjectClicked, confirmData.newChoice, destinationSelected, choicesData, false, isNewAction);
-                        evolutionPoints[selectedSpecies] = evolutionPoints[selectedSpecies] - minPoints;
-                    }
-
-                    windowType = WT_paused;
-                    editObjectClicked = -1;
-                    placeOneObjectClicked = -1;
-                    placeOneObject_hasBeenChosen = false;
-                    destinationSelected = -1;
-                    isNewAction = false;
-                    choiceRequiresData = false;
-                    choicesData = -1;
-                }
-
-                //else if you click the no button
-                else if(mousePos.x >= (yesNoBlockX + yesNoBlockHalfWidth) && mousePos.x <= (yesNoBlockX + yesNoBlockWidth) && mousePos.y >= yesNoBlockY && mousePos.y <= (yesNoBlockY + yesNoBlockHeight))
-                {
-                    windowType = WT_paused;
-                    editObjectClicked = -1;
-                    placeOneObjectClicked = -1;
-                    placeOneObject_hasBeenChosen = false;
-                    destinationSelected = -1;
-                    isNewAction = false;
-                    choiceRequiresData = false;
-                    choicesData = -1;
-                }
-            }
-
-            //  6dIV) if the pause button is clicked, changes sets paused = !paused
-            //      really ought to change this to paused = false;
-            else if((mousePos.y >= 640) && (mousePos.y <= 688) && (mousePos.x >= 0) && (mousePos.x <= 64))   //position of the pause button
-            {
-                std::cout << "pause button clicked \n";
-          /*      if(windowType == WT_running)
-                {
-                    windowType = WT_paused;
-                }   */
-                if(!windowType == WT_running)
-                {
-                    windowType = WT_running;
-                }
-            }
-
-            if(windowType == WT_running)
-            {
-                clickWhenRunning(mousePos.x, mousePos.y);
-            }
-
-            //  6dV) if paused and not editing, if the cellHolder was clicked, sets selectedSpecies to whichever species was clicked
-            else if(windowType == WT_paused && (mousePos.y >= cellHolderY) && (mousePos.y <= cellHolderY + cellHolderHeight) && (mousePos.x >= cellHolderX) && (mousePos.x <= cellHolderX + cellHolderWidth))
-            {
-                int speciesClicked = cellHolderSelector(mousePos.x, mousePos.y);
-
-                if(speciesClicked > -1)
-                {
-                    selectedSpecies = speciesClicked;
-                }
-            }
-
-            //if species is waiting and window is paused and clicked on the bring me to life button
-            else if(windowType == WT_paused && speciesIsWaiting[selectedSpecies] && speciesBeingPlaced != selectedSpecies && (mousePos.x >= BMTL_x) && (mousePos.x <= (BMTL_x + BMTLwidth)) && (mousePos.y >= BMTL_y) && (mousePos.y <= (BMTL_y + BMTLheight)))
-            {
-                speciesBeingPlaced = selectedSpecies;
-                speciesColor[speciesBeingPlaced] = findNextFreeColor();
-
-            }
-
-            //  6dVI)   turns editing to true if the EDIT button is clicked
-            //turns editing to false if CANCEL is clicked (it is in the same spot)
-            //resets editObjectClicked to -1 and edit_somethingClicked = false
-            else if((windowType == WT_paused || windowType == WT_editing || windowType == WT_editObjectSelected) && (mousePos.y >= cellHolderY) && (mousePos.y <= cellHolderY + editHeight) && (mousePos.x >= cellHolderX - 160) && (mousePos.x <= cellHolderX - 160 + editWidth))
-            {
-                if(windowType == WT_paused)
-                {
-                    windowType = WT_editing;
-                }
-                else
-                {
-                    windowType = WT_paused;
-                }
-
-                displayingConfirmChange = false;
-                placeOneObjectClicked = -1;
-                editObjectClicked = -1;
-                edit_somethingClicked = false;
-                placeOneObject_hasBeenChosen = false;
-                isNewAction = false;
-            }
-
-            //  6dVII)  if editing and something hasn't been clicked (selected for replacement), allows you to click an object that is flashing grey.
-            //chconfirmData.newChoice = placeOneObjectClicked;      //happens regardless anges editObjectClicked to value of object clicked based on mouse click position
-            else if(windowType == WT_editing && (mousePos.x >= firstChartBlockX) && (mousePos.x <= fullChartMaxX) && (mousePos.y >= firstChartBlockY) && (mousePos.y <= fullChartMaxY))
-            {
-                //6dVII-1)  sets editObjectClicked = editObjectSelected( , )
-                //if it doesn't return -1, edit_somethingClicked is set to true
-                editObjectClicked = editObjectSelected(mousePos.x, mousePos.y);
-                if(editObjectClicked > -1)
-                {
-                    windowType = WT_editObjectSelected;
-                }
-
-
-                //6dVII-2)  Basically, if you selected a spot that can't be edited yet or is spot 0, then edObjClicked = -1 and
-                //          edit_somethClicked = false;
-                //checks to make sure the object that the position you clicked has something in the position before it.
-                //if, for instance, queryC is selected without a queryB existing for that chartblock, then it is an invalid object click
-                //this will change edit_somethingClicked to false IFF the previous object has value less than zero
-                //ALSO - this statement is true if you click chart spot 0 (action = be born). Every cell needs to be born.
-                //thus, you cannot select chart spot 0 to edit
-                if((editObjectClicked < 60) && (((editObjectClicked < 15) && !(chartDisplaySprite[editObjectClicked - 1] > -1)) || ((editObjectClicked >= 15) && !(chartDisplaySprite[editObjectClicked-15] > -1)) || (editObjectClicked == 0)))
-                {
-                    editObjectClicked = -1;
-                    windowType = WT_editing;
-                }
-
-                //this is for the default query case specifically
-                else if((editObjectClicked > 59) && (chartDisplaySprite[editObjectClicked % 15] > -1))
-                {
-                    windowType = WT_selectingDestination;
-                    placeOneObjectClicked = QUERY_default;
-
-                }
-                //this is for new actions specifically
-                else if((editObjectClicked < 15) && (chartDisplaySprite[editObjectClicked] == -1))
-                {
-                    isNewAction = true;
-                }
-
-            }
-
-            //6dVIII)   if paused, editing, edit_somethingClicked, x pos within placeOneOptions space, y pos below placeOneOptions upper bound
-            //ONLY CHECKS if the player has clicked within the x bounds and under the upper y bound of the list of placeOneOptions
-            //inside this loop
-            //YOU NEED TO CHECK
-            //whether a placeOneOption has been selected based on whether it is actions or queries
-            // and whether the options extend as far down as the player has clicked (this if statement has no lower y bound)
-            else if(windowType == WT_editObjectSelected && (mousePos.x >= beginPlaceOneOptionsX) && (mousePos.x < beginPlaceOneOptionsX + chartBlockWidth) && (mousePos.y >= beginPlaceOneOptionsY))
-            {
-                //6dVIII-1) if a placeOneOption has not been clicked, sets placeOneObject_hasBeenChosen to true and placeOneObject_isAction to appropriate value based on user click
- //               std::cout << "placeOneObject_hasBeenChosen = " << placeOneObject_hasBeenChosen << "\n";
-                if(placeOneObject_hasBeenChosen == false)
-                {
-                    std::cout << "editObjectClicked: " << editObjectClicked << "\n";
- //                   std::cout << "entered 6dVIII-1 if-block AND editObjectClicked = " << editObjectClicked << "\n";
-                    //6dVIII-1a)    if the editObjectClicked was an action, set placeOneObject_isAction = true;
-                    //              set placeOneObjectClicked equal to the action number clicked if the user clicks within the options list
-                    if(editObjectClicked < 15)
-                    {
-                        placeOneObject_isAction = true;
-
-                        if(mousePos.y < beginPlaceOneOptionsY + actionHeight*(numActions-numUnselectableActions))
-                        {
-                            placeOneObjectClicked = (mousePos.y - beginPlaceOneOptionsY)/(actionHeight);
-                            placeOneObject_hasBeenChosen = true;
-                        }
-                        else
-                        {
-                            placeOneObjectClicked = -1;
-                        }
-
-
-                        std::cout << "setting placeOneObject_isAction to true\n";
-                        //do whatever for the actions blocks here
-                    }
-
-                    //6dVIII-1b)    if the object selected to edit is a query (not an action), set placeOneObject_isAction = false
-                    else if(editObjectClicked < 60)           // if(editObjectClicked >= 15)
-                    {
-
-                        placeOneObject_isAction = false;    //basically says you aren't selecting actions
-                        std::cout << "setting placeOneObject_isAction to false\n";
-
-                        //6dVIII-1bI)   Sets placeOneObjectClicked to the query clicked, unless mousePos.y is lower than bottom of lowest query.
-                        //Then, placeOneObjectClicked = -1
-                        if(mousePos.y < beginPlaceOneOptionsY + queryHeight*(numQueries-numUnselectableQueries)) //if mousePos.y is above the position of the end of the list of placeable query options
-                        {
-                            placeOneObjectClicked = (mousePos.y - beginPlaceOneOptionsY)/queryHeight;
-                            placeOneObject_hasBeenChosen = true;
-                        }
-                        else
-                        {
-                            placeOneObjectClicked = -1;
-                        }
-                    }
-                }
-
-
-                //6dVIII-2) if placeOneObject_hasBeenChosen = true
-                if(placeOneObject_hasBeenChosen == true)
-                {
-
-                    //6dVIII-2a)    if the currently selected species has enough evolutionPoints to modify, AND displayingConfirmChange = false then set
-					//	displayingConfirmChange = true, set confirmData.original appropriately, set confirmData.newChoice appropriately
-					// if not enough evolution points, display a message with std::out
-					std::cout << "entered 6dVIII-2a block\n";
-
-                    if((evolutionPoints[selectedSpecies] >= minPoints || evolutionPoints[speciesLink[selectedSpecies]]) && displayingConfirmChange == false)
-                    {
-                        std::cout << "evolutionPoints[selectedSpecies] >= minPoints\n";
-                        std::cout << "evolutionPoints[" << selectedSpecies << "] = " << evolutionPoints[selectedSpecies] << "\n";
-
-
-                        std::cout << "chartObjectClicked = " << editObjectClicked << "\n";
-                        std::cout << "this corresponds to query/action num: " << chartDisplaySprite[editObjectClicked] << "\n";
-
-
-                        confirmData.original = chartDisplaySprite[editObjectClicked];
-
-
-                        //setting confirmData.newChoice appropriately
-                        if(placeOneObject_isAction)
-                        {
-                            confirmData.newChoice = placeOneObjectClicked;      //happens regardless
-
-                            if(!actionRequiresData(placeOneObjectClicked))
-                            {
-
-
-                                displayingConfirmChange = true;
-                                windowType = WT_displayingConfirmChange;
-
-                                if(isNewAction)
-                                {
-                                    windowType = WT_selectingDestination;
-                                    displayingConfirmChange = false;
-                                }
-                            }
-                            else
-                            {
-                                windowType = WT_selectingData;
-                                choiceRequiresData = true;
-                            }
-
-                        }
-                        else
-                        {
-                            confirmData.newChoice = placeOneObjectClicked;
-
-                            if(!queryRequiresData(placeOneObjectClicked))
-                            {
-                                windowType = WT_selectingDestination;
-                            }
-                            else
-                            {
-                                windowType = WT_selectingData;
-                                choiceRequiresData = true;
-                            }
-
-                        }
-
-                        //display some text here that asks the user if they are sure, making sure to show them where they are making the change and what they are changing what for
-                            //if they click yes then change the flowchart
-                            //and subtract from evolution points
-                        //if they click no then exit from that window and set placeOneObjectClicked back to -1 and placeOneObject_hasBeenChosen to false
-                    }
-                    //6dVIII-2b)    else, reset the time left to display error messages
-                    else    //implies they don't have enough points
-                    {
-                        std::cout << "You don't have enough evolution points!\n";
-                        NEP_errorTime = errorLength + tickClock;
-                    }
-                }
-            }
-
-            //only for actions or queries that have metadata associated with them
-            else if(windowType == WT_selectingData)
-            {
-                if(mousePos.x >= QADataListX && mousePos.x < (QADataListX + QADataListWidth) && mousePos.y >= QADataListY && mousePos.y < (QADataListY + QADataListHeight))
-                {
-                    choicesData = determineDataClicked(mousePos.y);
-                    windowType = WT_selectingDestination;
-                }
-            }
-
-
-
-            else if(windowType == WT_selectingDestination)
-            {
-                destinationSelected = (editObjectSelected(mousePos.x, mousePos.y) % 15);
-
-                if(destinationSelected != -1)
-                {
-                    windowType = WT_displayingConfirmChange;
-                }
-
-            }
-
             //do whatever with the mouse coordinates. Keep in mind that itll detect mouse clicks outside the window so its gotta
             //account for this and make sure to basically not do anything if you click outside the  windowowow
 
+            windowTypeHandler();
+
         }
 
+        //this will allow cells to act iff the game is in "running" mode
         //6e)   if the game is not paused...
         if(windowType == WT_running)
         {
@@ -652,10 +391,8 @@ int main()
                 //6eI-1)    if the individual has 0 or less energy, set it to dead and set it's gameMap space to empty
                 if(population[n].energy <= 0)   //check to see if population[n] has any energy. If no, kills it and removes it from gameMap
                 {
-      //              std::cout << "individual " << n << " died\n";
                     population[n].alive = false;
                     gameMap[population[n].xPosition][population[n].yPosition] = MC_emptySpace;
-
                 }
 
                 //6eI-2)    if the individual is alive, not inanimate, and has energy > 0...
@@ -666,21 +403,22 @@ int main()
                                                 //changes to true if the individual attempts to move and then doesn't/cant.
                                                 //used in the "has collided" query
 
-                    //this statement just for troubleshooting
-                    if(population[n].species == 2)
-                    {
-                        std::cout << "species 2 detected! Action is: " << flowcharts[population[n].species][population[n].currentState].action << "\n";
-                        std::cout << "the current state is: " << population[n].currentState << "\n";
-                    }
 
-     //               std::cout << "the action: " << flowcharts[population[n].species][population[n].currentState].action << "\n";
-     //               std::cout << "the default destination: " << flowcharts[population[n].species][population[n].currentState].destination_default << "\n";
-     //               std::cout << "the species: " << population[n].species << "\n";
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//          This following part is where all the cells do thier actions
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
                     //6eI-2b)   do a switch case on the current individual's current action
                     //do whatever action for the part of the flowchart that individual is on
-                    std::cout << "flowcharts[" << population[n].species << "][" << population[n].currentState << "].action = " << flowcharts[population[n].species][population[n].currentState].action << "\n";
                     switch(flowcharts[population[n].species][population[n].currentState].action)      //switch based on the action of the current flowchart spot the individual is on
                     {
                         //6eI-2bI)  if the action is to go in a random direction
@@ -694,9 +432,8 @@ int main()
                                                                                                                 //to move to
                             //6eI-2bI-2)    if the new coordinates are the same as the old, set directionMoving to "None" and hasCollided to True
                             if(newLocation.x == population[n].xPosition && newLocation.y == population[n].yPosition)
-
                             {
-    //                            std::cout << "Collision: " << population[n].xPosition << ", " << population[n].yPosition << "\n";
+                                collisionBounceHandler(population[n].xPosition, population[n].yPosition, direction);
                                 population[n].directionMoving = DIR_none;
                                 hasCollided = true;
                             }
@@ -704,8 +441,8 @@ int main()
                             //6eI-2bI-3)    if the new coordinates are not the same, then:
                             else    //else if its a different spot
                             {
-                                //6eI-2bI-3a)   set gameMap at that spot to individuals ID value
-                                gameMap[population[n].xPosition][population[n].yPosition] = n;
+                                //6eI-2bI-3a)   set gameMap at original spot to empty
+                                gameMap[population[n].xPosition][population[n].yPosition] = MC_emptySpace;
 
                                 //6eI-2bI-3b)   set individual's x/y position to the new spot
                                 population[n].xPosition = newLocation.x;
@@ -714,8 +451,8 @@ int main()
                                 //6eI-2bI-3c)   set direction moving to the correct direction
                                 population[n].directionMoving = direction;
 
-                                //6eI-2bI-3d)   set old gameMap spot to "empty"
-                                gameMap[population[n].xPosition][population[n].yPosition] = MC_emptySpace; //the map spot where the individual was before is now -1 (no individual)
+                                //6eI-2bI-3d)   set gamemap at new spot to individuals ID
+                                gameMap[population[n].xPosition][population[n].yPosition] = n;
 
                                 //6eI-2bI-3e)   decrease individuals energy by 1
                                 population[n].energy--;
@@ -735,7 +472,7 @@ int main()
                             //6eI-2bII-2)   if newLocation is the same spot, set directionMoving to none and hasCollided to true
                             if(newLocation.x == population[n].xPosition && newLocation.y == population[n].yPosition)    //if after attempting to move, the individual is still in the same spot
                             {
-     //                           std::cout << "Collision: " << population[n].xPosition << ", " << population[n].yPosition << "\n";
+                                collisionBounceHandler(population[n].xPosition, population[n].yPosition, direction);
                                 population[n].directionMoving = DIR_none;     //corresponds to no direction
                                 hasCollided = true;
                             }
@@ -756,16 +493,29 @@ int main()
                         //6eI-2bIII)    if the action is to attempt to eat...
                         case ACTION_attemptToEat:
                         {
+                            std::cout << "in attempting to eat case\n";
                             //6eI-2bIII-1)  use attemptToEat to determine which, if any, spots nearby are best suited to be eaten
                             eatingInfo thisAttempt; //creates an "eating info" object
                             thisAttempt = attemptToEat(population[n].xPosition, population[n].yPosition, population[n].energy); //passes position and energy of individual into "attemptToEat" function to define eating info object created in last line
 
                             //6eI-2bIII-2)  if there is something to eat, add correct energy to individual, set eaten individual's "alive" value to false, and set the gameMap spot for that individual to empty
-                            if(thisAttempt.individualNumber != -1)  //if the individual being eaten value DOES NOT correspond to no individual to eat. This should actually happen often. If the collision is with an object or a larger creature it'll return -1
-                            {
+                            if(thisAttempt.individualNumber != -1 && thisAttempt.individualNumber < 1000)  //if the individual being eaten value corresponds to having an individual to eat. This should actually happen often. If the collision is with an object or a larger creature it'll return -1
+                            {                                                                               //the < 1000 is to make sure its not a mineral
                                 population[n].energy = population[n].energy + thisAttempt.energyEaten;
                                 population[thisAttempt.individualNumber].alive = false; //the individual being eaten now is set to "dead"
                                 gameMap[population[thisAttempt.individualNumber].xPosition][population[thisAttempt.individualNumber].yPosition] = MC_emptySpace;
+                            }
+                            else if(thisAttempt.individualNumber != -1 && thisAttempt.individualNumber >= 1000) //this means issa mineral that the cell is trying to eat
+                            {
+                                if(stomachChecker(n) != -1 && stomachChecker(n) < population[n].stomachSize)
+                                {
+                                    std::cout << "stomachChecker(" << n << ") != -1 && stomachChecker(" << n << ") < population[" << n << "].stomachSize\n";
+                                    population[n].stomach[stomachChecker(n)] = mineralPop[thisAttempt.individualNumber - 1000].type;        //sets stomach spot equal to that mineral type
+                                    mineralPop[thisAttempt.individualNumber - 1000].type = -1;       //sets mineral type of that mineral ID to zero
+                                    gameMap[mineralPop[thisAttempt.individualNumber-1000].x][mineralPop[thisAttempt.individualNumber-1000].y] = -1;     // sets gamemap code for the spot to -1
+//                                   std::cout << "first item in stomach is: " << population[n].stomach[0] << "\n";
+                                }
+
                             }
                             break;
                         }
@@ -786,7 +536,7 @@ int main()
                             //6eI-2bIV-3)   if the freeSpot is valid and the newIndividualNumber (ID number) is valid...
                             if(freeSpot.x != -1 && freeSpot.y != -1 && newIndividualNumber != -1)   //if there is a free spot AND newIndividualNumber != -1
                             {
-                                if(population[n].species != speciesLink[speciesBeingPlaced])
+                                if(population[n].species != speciesLink[speciesBeingPlaced])    //if the current species ISNT the parent species of the species being placed then...
                                 {
  //                                   std::cout << "got to line 701\n";
                                      //6eI-2bIV-3a)  new individual is created in new spot with identical features to old
@@ -794,16 +544,17 @@ int main()
                                     population[newIndividualNumber].xPosition = freeSpot.x;     //put it in the freeSpot x and y positions
                                     population[newIndividualNumber].yPosition = freeSpot.y;
                                     gameMap[freeSpot.x][freeSpot.y] = newIndividualNumber;
+                                    population[newIndividualNumber].species = population[n].species;
 
                                 }
-                                else
+                                else    //else, if this is the species being placed...
                                 {
                                     population[newIndividualNumber].species = speciesBeingPlaced;
                                     population[newIndividualNumber].xPosition = freeSpot.x;
                                     population[newIndividualNumber].yPosition = freeSpot.y;
                                     gameMap[freeSpot.x][freeSpot.y] = newIndividualNumber;
                                     population[newIndividualNumber].currentState = 0;
-                                    population[newIndividualNumber].divisionMinimum = 100;
+                                    population[newIndividualNumber].divisionMinimum = 100;  //dunno what's going on here but ok
                                     population[newIndividualNumber].alive = true;
                                     population[newIndividualNumber].inanimate = false;
 
@@ -851,6 +602,9 @@ int main()
                             break;
                         }
                     }
+
+                    //this is where minerals should move (unless collisions)
+                    moveMinerals(); //makes all the minerals move
 
                     //reset the query eval data
                     clearEvalData();
@@ -920,6 +674,8 @@ int main()
         //6g)   Clear screen
         app.clear();
 
+        validateIndividualSelected();   //in individualOps.h - makes sure that the individual selected is actualy alive, if not then sets individualSelected = -1
+
         background.setPosition(0,0);
         app.draw(background);
 
@@ -941,6 +697,8 @@ int main()
         //6j)   if the game is running or you're placing a new cell
         if(windowType == WT_running || windowType == WT_placingNewCell)
         {
+            sf::Sprite thisGuy;
+
             //6jI)  for all individuals in population, setPosition and draw corresponding sprite
             for(int n = 0; n < popSize; n++)
             {
@@ -953,14 +711,64 @@ int main()
                     cellToDisplay.setPosition(population[n].xPosition*16, population[n].yPosition*16);
                     app.draw(cellToDisplay);
                 }
+
                 if(n == individualSelected)
                 {
                     sf::Sprite temp;
+                    if(cellSelect_id == dest_15_id)
+                    {
+                        for(int i = 0; i < 100; i++)
+                        {
+                            cout << "line 720 dest_15 draw detected!\n";
+                        }
+                    }
                     temp = allSprites[cellSelect_id];
                     temp.setPosition(population[n].xPosition*16, population[n].yPosition*16);
                     app.draw(temp);
                 }
             }
+
+            //for all minerals being displayed, draw them in the right spot
+            for(int m = 0; m < mineralPopSize; m++)
+            {
+                sf::Sprite mineralToDisplay;
+
+                if(mineralPop[m].type != -1)
+                {
+                    mineralToDisplay = minerals[mineralPop[m].type];
+
+                    mineralToDisplay.setPosition(mineralPop[m].x*16, mineralPop[m].y*16);
+                    app.draw(mineralToDisplay);
+                }
+            }
+
+
+ /*           determineMapChanges();
+
+            for(int a = 0; a < mapWidth; a++)
+            {
+                for(int b = 0; b < mapHeight; b++)
+                {
+                    if(toDraw[a][b] < 20 && toDraw[a][b] > -1)
+                    {
+                        thisGuy = cells[toDraw[a][b]];
+                        thisGuy.setPosition(a*16, b*16);
+                        app.draw(thisGuy);
+                    }
+                    else if(toDraw[a][b] == 50)
+                    {
+                        thisGuy = allSprites[waterTile_id];
+                        thisGuy.setPosition(a*16, b*16);
+                        app.draw(thisGuy);
+                    }
+                    else if(toDraw[a][b] > 99)
+                    {
+                        thisGuy = minerals[toDraw[a][b] - 100];
+                        thisGuy.setPosition(a*16, b*16);
+                        app.draw(thisGuy);
+                    }
+                }
+            }   */
         }
         else        //if paused...
         {
@@ -973,6 +781,13 @@ int main()
             {
                 for(int y = firstChartBlockY; y <= 432; y = y + chartSpacingY)
                 {
+                    if(cellSelect_id == dest_15_id)
+                    {
+                        for(int i = 0; i < 100; i++)
+                        {
+                            cout << "line 786 dest_15 draw detected!\n";
+                        }
+                    }
                     allSprites[pauseChartObj_id].setPosition(x,y);
                     app.draw(allSprites[pauseChartObj_id]);
                 }
@@ -1107,7 +922,7 @@ int main()
             }
 
             //6kVI) create a sprite called tempSprite (guess what it does)
-            sf::Sprite tempSprite;
+            sf::Sprite tempSprite;          //is this actually being used?
 
             //6kVII)    draws the cell holder for the pause menu
             allSprites[cellHolder_id].setPosition(cellHolderX,cellHolderY);
@@ -1117,6 +932,8 @@ int main()
             cellSelectX = cellSelectXFind(selectedSpecies);
             cellSelectY = cellSelectYFind(selectedSpecies);
             allSprites[cellSelect_id].setPosition(cellSelectX, cellSelectY);
+
+
 
             //6kIX) draws cellSelect if tickClock is odd
             if((tickClock%2) == 1)
@@ -1146,10 +963,20 @@ int main()
                 text.setFont(gameFont);
                 app.draw(text);
                 textStringStream.str("");
+
+                textStringStream << "Minimum Division Energy: " << eDiv[selectedSpecies];
+                textString = textStringStream.str();
+                text.setString(textString);
+                text.setCharacterSize(16);
+                text.setPosition(240,cellHolderY + 32);
+                text.setColor(sf::Color::Red);
+                text.setFont(gameFont);
+                app.draw(text);
+                textStringStream.str("");
             }
 
 
-            //6kXII) draws the species currently present in the cell holder when the game is paused
+            //6kXII) draws the cell holder when the game is paused
             //For all possible cellHolder x,y values...
             for(int y = 0; y <= 1; y++)  //values of 544 and 560 only
             {
@@ -1184,7 +1011,6 @@ int main()
 
                     else if(speciesIsWaiting[y*10 + x])
                     {
-                        std::cout << "line 1083 reached\n";
                         thisCell = allSprites[CELL_grey_id];
                     }
 
@@ -1256,7 +1082,7 @@ int main()
             app.draw(text);
             textStringStream.str("");
 
-            textStringStream << "Evolution Points for this Species: " << evolutionPoints[individualSelected];
+            textStringStream << "Currently in this individual's stomach: ";
             textString = textStringStream.str();
             text.setString(textString);
             text.setCharacterSize(16);
@@ -1266,11 +1092,35 @@ int main()
             app.draw(text);
             textStringStream.str("");
 
-            textStringStream << "Population for this Species: " << speciesPop[individualSelected];
+            sf::Sprite tempMineral;
+
+            for(int i = 0; i < population[individualSelected].stomachSize; i++)
+            {
+                if(population[individualSelected].stomach[i] != -1 && i < population[individualSelected].stomachSize)
+                {
+                    tempMineral = minerals[population[individualSelected].stomach[i]];
+                    tempMineral.setPosition(304 + i*16, 672);
+                    app.draw(tempMineral);
+                    std::cout << "Should be drawing minerals in selected cell's stomach\n";
+                    std::cout << "stomach object " << i << " = " << population[individualSelected].stomach[i] << "\n";
+                }
+            }
+
+            textStringStream << "Evolution Points for this Species: " << evolutionPoints[individualSelected];
             textString = textStringStream.str();
             text.setString(textString);
             text.setCharacterSize(16);
             text.setPosition(80,688);
+            text.setColor(sf::Color::Red);
+            text.setFont(gameFont);
+            app.draw(text);
+            textStringStream.str("");
+
+            textStringStream << "Population for this Species: " << speciesPop[individualSelected];
+            textString = textStringStream.str();
+            text.setString(textString);
+            text.setCharacterSize(16);
+            text.setPosition(80,704);
             text.setColor(sf::Color::Red);
             text.setFont(gameFont);
             app.draw(text);
@@ -1431,10 +1281,10 @@ int main()
             if(editObjectClicked < 15)
             {
 
-                for(int i = 0; i < ACTION_greyedOut; i++)
+                for(int i = 1; i < ACTION_greyedOut; i++)   //i starts at which avoids the born option being selected
                 {
                     thisGuy = actions[i];
-                    thisGuy.setPosition(beginPlaceOneOptionsX, beginPlaceOneOptionsY + 32*i);
+                    thisGuy.setPosition(beginPlaceOneOptionsX, beginPlaceOneOptionsY + 32*(i-1));
                     app.draw(thisGuy);
                 }
             }
@@ -1466,7 +1316,6 @@ int main()
             thisGuy = selectSound;
             thisGuy.setPosition(800,0);
             app.draw(thisGuy);
-
         }
 
         //6r)   if editing, draws the "Select a spot to edit" text box
@@ -1479,7 +1328,7 @@ int main()
         //6s)   draws the yesNoBlock
         if(windowType == WT_displayingConfirmChange)
         {
-            std::cout << "drawing the yesNoBlock\n";
+            coutAndLog("drawing the yesNoBlock\n");
             yesNoBlock.setPosition(yesNoBlockX,yesNoBlockY);
             app.draw(yesNoBlock);
         }
@@ -1500,6 +1349,7 @@ int main()
 
     //7)    Saves the game
     save();
+    closeLog();
 
     //8)    final return value - program ends with SUCESS
     return EXIT_SUCCESS;
